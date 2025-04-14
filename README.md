@@ -7,3 +7,4 @@ This useful script allows you to write and read different file format:
 
 Reading and writing these file formats can be very useful for your local scripts
 
+You want to try this but don't know how to start. Try my tutorial for beginners: [https://github.com/uhqd/esapiForDummies](https://github.com/uhqd/esapiForDummies)
