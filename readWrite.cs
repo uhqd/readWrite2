@@ -72,17 +72,17 @@ namespace VMS.TPS
 
             #endregion
 
-
+            #region Create a dumb list with beam names and energies
             List<string> mylist = new List<string>();
             foreach (Beam b in context.PlanSetup.Beams)
             {
                 mylist.Add(b.Id + ";" + b.EnergyMode + "\n");
             }
+            #endregion
 
 
 
-
-            #region ECRIRE UN FICHIER TXT
+            #region WRITE TXT
             string thepath = @"toto.txt";
             File.AppendAllText(thepath, "FX;Energy\n");
             foreach (string s in mylist)
@@ -90,11 +90,11 @@ namespace VMS.TPS
                 File.AppendAllText(thepath, s);
 
             }
-            MessageBox.Show("Fichier " + thepath + " bien sauvegardé dans " + Directory.GetCurrentDirectory());
+            MessageBox.Show("File " + thepath + "\nsaved at " + Directory.GetCurrentDirectory());
 
             #endregion
 
-            #region LIRE UN FICHIER TXT
+            #region READ TXT
 
             string[] lines = File.ReadAllLines(thepath);
             string totaltext = string.Empty;
@@ -103,12 +103,13 @@ namespace VMS.TPS
                 totaltext += line;
             }
 
-            MessageBox.Show("Fichier " + thepath + " bien lu dans " + Directory.GetCurrentDirectory());
-            MessageBox.Show("Voici le contenu\n" + totaltext);
+            MessageBox.Show("File " + thepath + " closed, then opend to be read again " + Directory.GetCurrentDirectory());
+            MessageBox.Show("Here is the content of the txt file\n" + totaltext);
 
             #endregion
 
-            #region ECRIRE UN FICHIER DOCX
+            #region WRITE WORD FILE (DOCX)
+
             #region color of the table lines
             var wdcUncheck = (WdColor)(255 + 0x100 * 255 + 0x10000 * 213); // pale yellow
             var wdcX = (WdColor)(252 + 0x100 * 85 + 0x10000 * 62); // pale red
@@ -117,7 +118,7 @@ namespace VMS.TPS
             var wdcOk = (WdColor)(183 + 0x100 * 255 + 0x10000 * 183); // pale yellow
             #endregion
 
-            #region creation du fichier word et ouverture de word
+            #region creation of word file and open MS Word
             Microsoft.Office.Interop.Word.Application winword;
             winword = new Microsoft.Office.Interop.Word.Application();
             winword.ShowAnimation = false;
@@ -129,7 +130,7 @@ namespace VMS.TPS
             document.PageSetup.Orientation = WdOrientation.wdOrientLandscape;
             #endregion
 
-            #region en tête
+            #region header
             foreach (Microsoft.Office.Interop.Word.Section section in document.Sections)
             {
                 Microsoft.Office.Interop.Word.Range headerRange = section.Headers[Microsoft.Office.Interop.Word.WdHeaderFooterIndex.wdHeaderFooterPrimary].Range;
@@ -137,11 +138,11 @@ namespace VMS.TPS
                 headerRange.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphCenter;
                 headerRange.Font.ColorIndex = Microsoft.Office.Interop.Word.WdColorIndex.wdBlue;
                 headerRange.Font.Size = 12;
-                headerRange.Text = "TEST DE HEADER";
+                headerRange.Text = "TEST HEADER";
             }
             #endregion
 
-            #region pied de page
+            #region footer
             foreach (Microsoft.Office.Interop.Word.Section wordSection in document.Sections)
             {
                 //Get the footer range and add the footer details.  
@@ -149,12 +150,12 @@ namespace VMS.TPS
                 footerRange.Font.ColorIndex = Microsoft.Office.Interop.Word.WdColorIndex.wdBlack;
                 footerRange.Font.Size = 10;
                 footerRange.ParagraphFormat.Alignment = Microsoft.Office.Interop.Word.WdParagraphAlignment.wdAlignParagraphCenter;
-                string footText = "TEST DE FOOTER";
+                string footText = "TEST  FOOTER";
                 footerRange.Text = footText;// "Footer text goes here";
             }
             #endregion
 
-            #region première ligne simple
+            #region first line simple
             document.Content.SetRange(0, 0);
             // Ajouter du texte
             Paragraph para = document.Paragraphs.Add();
@@ -162,7 +163,7 @@ namespace VMS.TPS
             para.Range.InsertParagraphAfter();
             #endregion
 
-            #region plus compliqué un tableau 
+            #region more complicated : create a table 
             Microsoft.Office.Interop.Word.Paragraph para1 = document.Content.Paragraphs.Add(ref missing);
             para1.Range.Font.Size = 12;
             para1.Range.ParagraphFormat.Alignment = WdParagraphAlignment.wdAlignParagraphCenter;
@@ -193,16 +194,18 @@ namespace VMS.TPS
             }
 
 
-            table1.Rows[1].Cells[1].Range.Text = "Patient : ";
+            table1.Rows[1].Cells[1].Range.Text = "Love will : ";
 
-            table1.Rows[1].Cells[2].Range.Text = "toto";
-            table1.Rows[1].Cells[3].Range.Text = "titi";
+            table1.Rows[1].Cells[2].Range.Text = "tear us";
+            table1.Rows[1].Cells[3].Range.Text = "apart";
             para1.Range.Text = Environment.NewLine;
 
             #endregion
 
-            #region sauvegarde et fermeture de word
+            #region save and close MS Word
             string textfilename = Directory.GetCurrentDirectory() + @"\toto2.docx";
+            if (File.Exists(textfilename)) // delete file if it already exists
+                File.Delete(textfilename);
             object filename = textfilename;
             document.SaveAs2(ref filename);
             document.Close(ref missing, ref missing, ref missing);
@@ -211,10 +214,11 @@ namespace VMS.TPS
             System.Runtime.InteropServices.Marshal.ReleaseComObject(winword);
 
             #endregion
-            MessageBox.Show("Création d'un WORD\nFichier " + textfilename + " créé et sauvegardé");
+
+            MessageBox.Show("WORD file is created\nFile " + textfilename);
             #endregion
 
-            #region LIRE UN FICHIER DOCX
+            #region READ WORD (DOCX)
             Document doc = null;
             Microsoft.Office.Interop.Word.Application wordApp = new Microsoft.Office.Interop.Word.Application();
             try
@@ -225,39 +229,42 @@ namespace VMS.TPS
                 wordApp.Visible = false;
                 doc = wordApp.Documents.Open(ref filePath, ReadOnly: ref readOnly);
                 string firstLine = doc.Paragraphs[1].Range.Text.Trim();
-                MessageBox.Show("Lecture de la première ligne:\n" + firstLine);
+                MessageBox.Show("Read the first line of DOCX file:\n" + firstLine);
             }
-            finally   // sera toujours executé contrairement à catch
+            finally   // always executed unlike catch
             {
                 doc?.Close(false);
                 wordApp.Quit();
             }
             #endregion
 
-            #region ECRIRE UN FICHIER XLSX 
+            #region WRITE EXEL (XLSX)
             Microsoft.Office.Interop.Excel.Application excelApp = new Microsoft.Office.Interop.Excel.Application();
             Workbook workbook = null;
             Worksheet worksheet = null;
             try
             {
-                // Créer un nouveau classeur
+                // create a workbook
                 workbook = excelApp.Workbooks.Add();
                 worksheet = workbook.ActiveSheet;
 
-                // Écrire les valeurs dans les cellules
+                // write in first cells
                 worksheet.Cells[1, 1] = 1; // A1
                 worksheet.Cells[1, 2] = 2; // B1
 
-                // Définir le chemin du fichier
-                string filePath = Directory.GetCurrentDirectory() + @"\toto.xlsx";
+                // Define a path
 
-                // Sauvegarder le fichier
+                string filePath = Directory.GetCurrentDirectory() + @"\toto.xlsx";
+                if (File.Exists(filePath))// remove if it exists
+                    File.Delete(filePath);
+
+                // save
                 workbook.SaveAs(filePath);
 
             }
             finally
             {
-                // Fermeture propre d'Excel
+                // close Excel
                 workbook?.Close(false);
                 excelApp.Quit();
             }
@@ -265,70 +272,74 @@ namespace VMS.TPS
 
             #endregion
 
-            #region LIRE UN FICHIER XLSX 
+            #region READ EXEL (XLSX)
+
             Microsoft.Office.Interop.Excel.Application excelApp2 = new Microsoft.Office.Interop.Excel.Application();
             workbook = null;
             worksheet = null;
             try
             {
-                // Ouvrir le fichier Excel (modifier le chemin !)
+                // open  Excel file (modifier le chemin !)
                 string filePath = Directory.GetCurrentDirectory() + @"\toto.xlsx";
                 workbook = excelApp2.Workbooks.Open(filePath);
                 worksheet = workbook.ActiveSheet;
 
-                // Lire la valeur de la cellule B1 (ligne 1, colonne 2)
+                // read cell B1 (line 1, col. 2)
                 object cellValue = worksheet.Cells[1, 2].Value;
                 MessageBox.Show("Lecture du fichier EXCEL\nValeur de B1 : " + cellValue);
             }
             finally
             {
-                // Fermeture propre d'Excel
+                // close Excel
                 workbook?.Close(false);
                 excelApp2.Quit();
             }
 
             #endregion
 
-            #region Créer un document PDF (avec pdfsharp)
+            #region Create a PDF file (with pdfsharp)
             try
             {
                 PdfSharp.Pdf.PdfDocument document2 = new PdfSharp.Pdf.PdfDocument();
-                document2.Info.Title = "Mon premier PDF";
+                document2.Info.Title = "My first PDF";
 
-                // Ajouter une page
+                // add a page
                 PdfSharp.Pdf.PdfPage page = document2.AddPage();
                 XGraphics gfx = XGraphics.FromPdfPage(page);
 
-                // Définir une police
+                // define a police
                 XFont font = new XFont("Arial", 20, XFontStyle.Bold);
 
-                // Ajouter du texte
+                // add text
                 gfx.DrawString("Mathilde et Julia", font, XBrushes.Black, new XPoint(50, 100));
 
-                // Définir le chemin du fichier
+                // define a path
                 string filePath2 = Directory.GetCurrentDirectory() + @"\toto.pdf";
 
-                // Sauvegarder le fichier PDF
+                if(File.Exists(filePath2)) // remove if it exists
+                    File.Delete(filePath2);
+
+                // save  PDF
                 document2.Save(filePath2);
-                MessageBox.Show("Fichier PDF créé avec succès !");
+                MessageBox.Show(" PDF file is created !");
             }
             catch
             {
-                MessageBox.Show("Erreur a la creation du pdf");
+                MessageBox.Show("Error creation pdf");
             }
             #endregion
 
-            #region LIRE LE PDF (avec itext)
+            #region READ PDF (itext)
             string filePath3 = Directory.GetCurrentDirectory() + @"\toto.pdf";
             using (PdfReader reader = new PdfReader(filePath3))
             using (iText.Kernel.Pdf.PdfDocument pdfDoc = new iText.Kernel.Pdf.PdfDocument(reader))
             {
-                // Extraire tout le texte de la première page
+                // extract first page
                 string text = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(1));
 
-                // Séparer les lignes et afficher la première
+                // Separate lines, display first one
                 string firstLine = text.Split('\n')[0];
-                MessageBox.Show("Première ligne du PDF : " + firstLine);
+                MessageBox.Show("first line read in PDF : " + firstLine);
             }
             #endregion
 
