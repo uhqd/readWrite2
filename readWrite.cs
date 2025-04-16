@@ -74,10 +74,13 @@ namespace VMS.TPS
 
             #region Create a dumb list with beam names and energies
             List<string> mylist = new List<string>();
+            
             foreach (Beam b in context.PlanSetup.Beams)
             {
-                mylist.Add(b.Id + ";" + b.EnergyMode + "\n");
+                mylist.Add(b.Id + ";" + b.EnergyMode + "\n");//
+                
             }
+
             #endregion
 
 
